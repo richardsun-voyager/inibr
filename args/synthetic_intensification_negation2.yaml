@@ -1,0 +1,28 @@
+common:
+    exp_name: synthetic_2021
+    arch: SimpleRegressor
+    batch_size: 256 #64
+    
+    vocab_size: 86
+    dropout: 0.5
+    embed_dim: 300
+    hidden_dim: 300
+    label_dim: 2
+    num_layers: 1
+    bidirectional: True
+    
+    keep_last_model: True
+    use_pretrained_emb: False
+    update_emb: True
+    weight_decay: 0.001
+    epoch_num: 20
+    lr: 0.01
+    
+    dic_path: '../../data/intensification2/vocab/local_dict_lower.pkl'
+    emb_path: '../../data/intensification2/vocab/local_emb_lower.pkl'
+    train_path: '../../data/intensification2/train_seq_lower.pkl'
+    dev_path: '../../data/intensification2/dev_seq_lower.pkl'
+    test_path: '../../data/intensification2/test_seq_lower.pkl'
+    model_name: 'cnn'
+
+

@@ -1,0 +1,28 @@
+common:
+    exp_name: sst3_2021
+    arch: SimpleClassifier
+    batch_size: 1024 #64
+    
+    vocab_size: 18025
+    dropout: 0.5
+    embed_dim: 300
+    hidden_dim: 300
+    label_dim: 2
+    num_layers: 1
+    bidirectional: True
+    
+    keep_last_model: True
+    use_pretrained_emb: False
+    update_emb: True
+    weight_decay: 0.001
+    epoch_num: 20
+    lr: 0.01
+    
+    dic_path: '../../data/SST_Standard/SST5_with_subphrases/vocab/local_dict_lower.pkl'
+    emb_path: '../../data/SST_Standard/SST5_with_subphrases/vocab/local_emb_lower.pkl'
+    train_path: '../../data/SST_Standard/SST5_with_subphrases/train_seq_lower.pkl'
+    dev_path: '../../data/SST_Standard/SST5_with_subphrases/dev_seq_lower.pkl'
+    test_path: '../../data/SST_Standard/SST5_with_subphrases/test_seq_lower.pkl'
+    model_name: 'rnn'
+
+

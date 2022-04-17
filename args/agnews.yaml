@@ -1,0 +1,27 @@
+common:
+    exp_name: agnews
+    arch: RNNAttnClassifier
+    batch_size: 1024
+    
+    vocab_size: 85568
+    dropout: 0.5
+    embed_dim: 300
+    hidden_dim: 300
+    label_dim: 2
+    num_layers: 1
+    bidirectional: False
+    
+    use_pretrained_emb: True
+    update_emb: True
+    weight_decay: 0.001
+    epoch_num: 20
+    lr: 0.0005
+    
+    dic_path: '../../data/agnews/vocab/local_dict_lower.pkl'
+    emb_path: '../../data/agnews/vocab/local_emb_lower.pkl'
+    train_path: '../../data/agnews/train_seq_lower.pkl'
+    dev_path: '../../data/agnews/dev_seq_lower.pkl'
+    test_path: '../../data/agnews/test_seq_lower.pkl'
+    model_name: 'cnn'
+
+
