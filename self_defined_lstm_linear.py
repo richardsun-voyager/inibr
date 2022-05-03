@@ -50,7 +50,7 @@ class LSTMCell(nn.Module):
     self.num_chunks = num_chunks
     self.reset_parameters()
     self.hardtanh = nn.Hardtanh(-bound, bound)
-    print('tarlor series lstm linear simplified')
+    print('MVMA-L')
 
   def reset_parameters(self):
     '''
@@ -104,8 +104,7 @@ class LSTMCell(nn.Module):
     D = gx_c*fx_i*h_i + gx_i*fx_c*h_g
     E = gx_o * (1-g_c_tanh**2) * gx_f * cell 
     FF = gx_o * (1-g_c_tanh**2) * D + fx_o * g_c_tanh * h_o######original
-    # FF = gx_o * (1-g_c_tanh**2) * D + fx_o * g_c_tanh * h_o + fx_f*h_f#############enhanced
-    #FF =  fx_o * g_c_tanh * h_o##simplified
+
     hidden = g_h + E +FF
     cell = g_c + B + D
 
@@ -114,44 +113,6 @@ class LSTMCell(nn.Module):
 
     return hidden, cell, inputgate, forgetgate
 
-# class GRUCell(nn.Module):
-#   def __init__(self, input_size, hidden_size, bias=False, num_chunks=3):
-#     super(GRUCell, self).__init__()
-#     self.input_size = input_size
-#     self.hidden_size = hidden_size
-#     self.bias = bias
-#     self.weight_ih = nn.Parameter(torch.Tensor(num_chunks * hidden_size, input_size))
-#     self.weight_hh = nn.Parameter(torch.Tensor(num_chunks * hidden_size, hidden_size))
-#     self.num_chunks = num_chunks
-#     self.reset_parameters()
-
-#   def reset_parameters(self):
-#     '''
-#     This is important to curb the range of the initializations.
-#     '''
-#     stdv = 1.0 / np.sqrt(self.hidden_size)
-#     for weight in self.parameters():
-#         init.uniform_(weight, -stdv, stdv)
-  
-#   def init_hidden(self, batch_size):
-#     weight = next(self.parameters())
-#     return weight.new_zeros(batch_size, self.hidden_size)
-
-#   def forward(self, x, hidden):
-#     '''
-#     x: batch_size, input_size
-#     h: batch_size, hidden_size
-#     '''
-#     gi = F.linear(x, self.weight_ih)
-#     gh = F.linear(hidden, self.weight_hh)
-#     i_r, i_i, i_n = gi.chunk(3, 1)
-#     h_r, h_i, h_n = gh.chunk(3, 1)
-#     resetgate = torch.sigmoid(i_r + h_r)
-#     inputgate = torch.sigmoid(i_i + h_i)
-#     newgate = torch.tanh(i_n + resetgate * h_n)
-#     hidden = newgate + inputgate * (hidden - newgate)
-#     #rint(resetgate)
-#     return hidden, newgate, inputgate, resetgate
 
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, bidirectional=False):

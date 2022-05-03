@@ -37,49 +37,6 @@ def adjust_order(batch_size, max_len, lengths):
   new_index = (index + shift)%max_len
   return new_index
 
-# class GRUCell(nn.Module):
-#   def __init__(self, input_size, hidden_size, bias=False, num_chunks=3):
-#     super(GRUCell, self).__init__()
-#     self.input_size = input_size
-#     self.hidden_size = hidden_size
-#     self.bias = bias
-#     self.weight_ih = nn.Parameter(torch.Tensor(num_chunks * hidden_size, input_size))
-#     self.weight_hh = nn.Parameter(torch.Tensor(num_chunks * hidden_size, hidden_size))
-#     self.linear_ih = nn.Linear(hidden_size, 1)
-#     self.linear_hh = nn.Linear(hidden_size, 1)
-#     self.num_chunks = num_chunks
-#     self.reset_parameters()
-
-#   def reset_parameters(self):
-#     '''
-#     This is important to curb the range of the initializations.
-#     '''
-#     stdv = 1.0 / np.sqrt(self.hidden_size)
-#     for weight in self.parameters():
-#         init.uniform_(weight, -stdv, stdv)
-  
-#   def init_hidden(self, batch_size):
-#     weight = next(self.parameters())
-#     return weight.new_zeros(batch_size, self.hidden_size)
-
-#   def forward(self, x, hidden):
-#     '''
-#     x: batch_size, input_size
-#     h: batch_size, hidden_size
-#     '''
-#     gi = F.linear(x, self.weight_ih)
-#     gh = F.linear(hidden, self.weight_hh)
-#     i_r, i_i, i_n = gi.chunk(3, 1)
-#     h_r, h_i, h_n = gh.chunk(3, 1)
-
-#     resetgate = torch.sigmoid(self.linear_ih(i_r + h_r))#batch_size*1
-#     inputgate = torch.sigmoid(self.linear_hh(i_i + h_i))#batch_size*1
-#     resetgate = resetgate.expand(len(x), self.hidden_size)
-#     inputgate = inputgate.expand(len(x), self.hidden_size)
-#     newgate = torch.tanh(i_n + resetgate * h_n)#batch_size*hidden_size
-#     hidden = newgate + inputgate * (hidden - newgate)
-#     #rint(resetgate)
-#     return hidden, newgate, inputgate, resetgate
 
 bound = 1.0
 
@@ -92,10 +49,11 @@ class GRUCell(nn.Module):
     self.bias = bias
     self.weight_ih = nn.Parameter(torch.Tensor(num_chunks * hidden_size, input_size))
     self.weight_hh = nn.Parameter(torch.Tensor(num_chunks * hidden_size, hidden_size))
+    self.weight_bias = nn.Parameter(torch.Tensor(1, num_chunks * hidden_size))
     self.num_chunks = num_chunks
     self.reset_parameters()
     self.hardtanh = nn.Hardtanh(-bound, bound)
-    print(' gru no combination')
+    print('MVM-G')
 
   def reset_parameters(self):
     '''
@@ -115,8 +73,8 @@ class GRUCell(nn.Module):
     h: batch_size, hidden_size
     '''
     gi = F.linear(x, self.weight_ih)
-    #print(hidden.shape)
-    #print(self.weight_hh.shape)
+    if self.bias:
+        gi = gi + self.weight_bias
     gh = F.linear(hidden, self.weight_hh)
     i_r, i_i, i_n = gi.chunk(3, 1)
     h_r, h_i, h_n = gh.chunk(3, 1)
@@ -128,26 +86,6 @@ class GRUCell(nn.Module):
 #     newgate = torch.tanh(temp)
 #     # newgate = self.hardtanh(temp)
 #     hidden = newgate + inputgate * (hidden - newgate)
-
-# ##******************************linear gru**********************
-#     g_r = torch.sigmoid(i_r)
-#     f_r = g_r*(1-g_r)
-#     g_z = torch.sigmoid(i_i)
-#     f_z = g_z*(1-g_z)
-#     g_n = torch.tanh(i_n)
-#     f_n = 1-g_n**2
-#     g = (1-g_z) * g_n
-#     hidden = g + f_n*(1-g_z)*g_r*h_n-f_z*g_n*h_i+g_z*hidden############original
-    #hidden = g + f_n*(1-g_z)*g_r*h_n-g_z*g_r*h_i+g_z*hidden+f_r*h_r###########improved
-    #hidden = g + g_z*hidden ######################degenerated##########
-# # #******************************variant GRU*****************************************#
-#     resetgate = torch.sigmoid(i_r+h_r) #(i_r + h_r)*0.25+0.5-(i_r + h_r)**3*(0.6/48)
-#     newgate = torch.sigmoid(h_r)
-#     inputgate = torch.sigmoid(i_i + h_i)#(i_i + h_i)*0.25+0.5-(i_i + h_i)**3*(0.6/48)
-#     temp = newgate*i_n + resetgate * h_n
-#     candid = torch.tanh(temp)
-#     # newgate = self.hardtanh(temp)
-#     hidden = candid + inputgate * (hidden - candid)
 
 ##******************************n-gram gru**********************
     g_r = torch.sigmoid(i_r)
@@ -163,9 +101,6 @@ class GRUCell(nn.Module):
         hidden = f_n*(1-g_z)*g_r*h_n-f_z*g_n*h_i+g_z*hidden
 
 
-
-    #hidden = self.hardtanh(hidden)
-    
     newgate, inputgate, resetgate = 0, 0, 0
     return hidden, newgate, inputgate, resetgate
 
